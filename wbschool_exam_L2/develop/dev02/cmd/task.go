@@ -28,7 +28,7 @@ import (
 func main() {
 	var s string
 	fmt.Scanf("%s\n", &s)
-	result, err := decodeString(s)
+	result, err := unpackString(s)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -40,13 +40,16 @@ func unpackString(s string) (string, error) {
 		sb   strings.Builder
 		temp string
 	)
-	for _, v := range s {
+	for i, v := range s {
 		if n, err := strconv.ParseInt(string(v), 0, 64); err == nil {
 			for i := int64(0); i < n-1; i++ {
 				sb.WriteString(temp)
 				continue
 			}
 			continue
+		}
+		if string(v) == `\` {
+			checkEscape(s[i:])
 		}
 		temp = string(v)
 		sb.WriteRune(v)
@@ -56,4 +59,11 @@ func unpackString(s string) (string, error) {
 		return "", fmt.Errorf("Error occure while input string is incorrect")
 	}
 	return sb.String(), nil
+}
+
+func checkEscape(s string) {
+	if l := strings.Count(s, `\`); i == 1 {
+
+	}
+
 }

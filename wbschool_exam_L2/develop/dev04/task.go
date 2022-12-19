@@ -1,5 +1,7 @@
 package main
 
+import "unicode/utf8"
+
 /*
 === Поиск анаграмм по словарю ===
 
@@ -21,4 +23,11 @@ package main
 
 func main() {
 
+}
+
+func anagramCheck(strs []string) bool {
+	for _, v := range strs {
+		length := utf8.RuneCountInString(v)
+
+	}
 }
