@@ -1,6 +1,10 @@
 package main
 
-import "unicode/utf8"
+import (
+	"fmt"
+	"sort"
+	"strings"
+)
 
 /*
 === Поиск анаграмм по словарю ===
@@ -22,12 +26,28 @@ import "unicode/utf8"
 */
 
 func main() {
-
+	fmt.Println(keyAdd(&[]string{"Пятак", "Пятка", "ТяПка", "листок"}))
 }
 
-func anagramCheck(strs []string) bool {
-	for _, v := range strs {
-		length := utf8.RuneCountInString(v)
+func keyAdd(strs *[]string) *map[string]*[]string {
+	angs := make(map[string]*[]string)
+	for _, s := range *strs {
+		s = strings.ToLower(s)
+		word := strings.Split(s, "")
+		sort.Strings(word)
+		key := strings.Join(word, "")
+		if _, ok := angs[key]; !ok {
+			*angs[key] = append(make([]string, 0), s)
+		} else {
+			*angs[key] = append(*angs[key], s)
+		}
+	}
+	sortmap(&angs)
+	return &angs
+}
 
+func sortmap(angs *map[string]*[]string) {
+	for _, v := range *angs {
+		sort.Strings(*v)
 	}
 }
