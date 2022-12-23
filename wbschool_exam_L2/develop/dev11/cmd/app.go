@@ -1,5 +1,13 @@
 package main
 
+import (
+	"github.com/s1ovac/dev11/internal/event"
+	"log"
+	"net"
+	"net/http"
+	"time"
+)
+
 /*
 === HTTP server ===
 
@@ -23,5 +31,21 @@ package main
 */
 
 func main() {
+	mux := http.NewServeMux()
+	handler := event.NewHandler()
+	handler.Register(mux)
+	start(mux)
+}
 
+func start(mux *http.ServeMux) {
+	listener, err := net.Listen("tcp", ":8080")
+	if err != nil {
+		log.Fatal(err)
+	}
+	server := &http.Server{
+		Handler:      mux,
+		WriteTimeout: 5 * time.Second,
+		ReadTimeout:  5 * time.Second,
+	}
+	log.Fatal(server.Serve(listener))
 }
