@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"github.com/s1ovac/dev11/internal/event"
 	"log"
 	"net"
@@ -48,4 +49,13 @@ func start(mux *http.ServeMux) {
 		ReadTimeout:  5 * time.Second,
 	}
 	log.Fatal(server.Serve(listener))
+}
+
+func stop(ctx *context.Context, done chan bool) {
+	for {
+		select {
+		case <-done:
+
+		}
+	}
 }

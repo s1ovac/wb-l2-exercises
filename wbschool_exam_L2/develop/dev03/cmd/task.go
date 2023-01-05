@@ -44,6 +44,7 @@ var (
 	backSpace bool
 	check     bool
 	numberH   bool
+	filename  string
 )
 
 func initFlags() {
@@ -55,16 +56,18 @@ func initFlags() {
 	flag.BoolVar(&backSpace, "b", false, "ignore spaces at the back")
 	flag.BoolVar(&check, "c", false, "check if data is sorted")
 	flag.BoolVar(&numberH, "h", false, "sort by numbers with suffix")
+	flag.StringVar(&filename, "f", "", "path to read file")
 	flag.Parse()
 }
 
 func main() {
 	initFlags()
-	result, err := readFile("/home/s1ovac/github.com/wb-l2-exercises/wbschool_exam_L2/develop/dev03/text.txt")
+	result, err := readFile(filename)
 	if err != nil {
 		log.Fatal(err)
 	}
 	fmt.Println(result)
+
 }
 
 func readFile(filename string) (result []string, err error) {

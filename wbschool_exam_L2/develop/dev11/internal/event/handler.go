@@ -3,6 +3,7 @@ package event
 import (
 	"encoding/json"
 	"github.com/s1ovac/dev11/internal/handlers"
+	"github.com/s1ovac/dev11/internal/storage"
 	"log"
 	"net/http"
 )
@@ -10,10 +11,13 @@ import (
 var _ handlers.Handler = &handler{}
 
 type handler struct {
+	cache *storage.Storage
 }
 
 func NewHandler() handlers.Handler {
-	return &handler{}
+	return &handler{
+		cache: storage.NewCache(),
+	}
 }
 
 func (h *handler) Register(mux *http.ServeMux) {
@@ -37,6 +41,9 @@ func (h *handler) CreateEvent(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *handler) UpdateEvent(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		w.WriteHeader(400)
+	}
 	data, err := json.Marshal(r.Body)
 	if err != nil {
 		log.Fatal(err)
@@ -46,6 +53,9 @@ func (h *handler) UpdateEvent(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *handler) DeleteEvent(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		w.WriteHeader(400)
+	}
 	data, err := json.Marshal(r.Body)
 	if err != nil {
 		log.Fatal(err)
@@ -55,12 +65,8 @@ func (h *handler) DeleteEvent(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *handler) EventForDay(w http.ResponseWriter, r *http.Request) {
-	data, err := json.Marshal(r.Body)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer r.Body.Close()
-	w.Write(data)
+	//event, err := h.cache.Get()
+
 }
 
 func (h *handler) EventForWeek(w http.ResponseWriter, r *http.Request) {
