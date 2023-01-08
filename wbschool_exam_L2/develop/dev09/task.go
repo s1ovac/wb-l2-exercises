@@ -5,6 +5,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
 )
 
@@ -17,14 +18,20 @@ import (
 */
 
 func main() {
-	file := download("https://aqua-gym.ru")
-	fmt.Println(file.Name())
-}
-
-func download(path string) *os.File {
-	res, err := http.Get(path)
+	file, err := download(os.Args[1])
 	if err != nil {
 		log.Fatal(err)
+	}
+	fmt.Printf("file with name: %s was created\n", file.Name())
+}
+
+func download(path string) (*os.File, error) {
+	if err := parseURL(path); err != nil {
+		return nil, err
+	}
+	res, err := http.Get(path)
+	if err != nil {
+		return nil, err
 	}
 	body, err := io.ReadAll(res.Body)
 	defer res.Body.Close()
@@ -32,15 +39,23 @@ func download(path string) *os.File {
 		log.Fatalf("Response failed with status code: %d and\nbody: %s\n", res.StatusCode, body)
 	}
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 	file, err := os.Create("index.html")
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 	defer file.Close()
 	if _, err := file.Write(body); err != nil {
-		return &os.File{}
+		return nil, err
 	}
-	return file
+	return file, nil
+}
+
+func parseURL(rawURL string) error {
+	_, err := url.Parse(rawURL)
+	if err != nil {
+		return err
+	}
+	return nil
 }
