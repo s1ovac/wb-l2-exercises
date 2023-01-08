@@ -26,28 +26,37 @@ import (
 */
 
 func main() {
-	fmt.Println(keyAdd(&[]string{"Пятак", "Пятка", "ТяПка", "листок"}))
+	fmt.Println(findAnagram(&[]string{"Пятак", "Пятка", "ТяПка", "листок"}))
 }
 
-func keyAdd(strs *[]string) *map[string]*[]string {
-	angs := make(map[string]*[]string)
+func findAnagram(strs *[]string) *map[string]*[]string {
+	anagrams := make(map[string][]string)
+	result := make(map[string]*[]string)
 	for _, s := range *strs {
 		s = strings.ToLower(s)
 		word := strings.Split(s, "")
 		sort.Strings(word)
 		key := strings.Join(word, "")
-		if _, ok := angs[key]; !ok {
-			*angs[key] = append(make([]string, 0), s)
+		if _, ok := anagrams[key]; !ok {
+			anagrams[key] = make([]string, 0)
+			anagrams[key] = append(anagrams[key], s)
 		} else {
-			*angs[key] = append(*angs[key], s)
+			anagrams[key] = append(anagrams[key], s)
 		}
 	}
-	sortmap(&angs)
-	return &angs
+	sortMap(&anagrams)
+	for _, k := range anagrams {
+		key := k[0]
+		result[key] = new([]string)
+		for _, v := range k {
+			*result[key] = append(*result[key], v)
+		}
+	}
+	return &result
 }
 
-func sortmap(angs *map[string]*[]string) {
-	for _, v := range *angs {
-		sort.Strings(*v)
+func sortMap(anagrams *map[string][]string) {
+	for _, v := range *anagrams {
+		sort.Strings(v)
 	}
 }
