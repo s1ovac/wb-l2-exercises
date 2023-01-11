@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"strconv"
 )
 
 /*
@@ -18,7 +19,7 @@ import (
 */
 
 func main() {
-	file, err := download(os.Args[1])
+	file, err := download("https://aqua-gym.ru")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -41,7 +42,18 @@ func download(path string) (*os.File, error) {
 	if err != nil {
 		return nil, err
 	}
-	file, err := os.Create("index.html")
+	var (
+		index    = 0
+		filename = "index_"
+	)
+	for {
+		if _, err := os.Open(filename + strconv.Itoa(index) + ".html"); err == nil {
+			index += 1
+			continue
+		}
+		break
+	}
+	file, err := os.Create(filename + strconv.Itoa(index) + ".html")
 	if err != nil {
 		return nil, err
 	}
