@@ -4,8 +4,14 @@ Copyright © 2022 NAME HERE <EMAIL ADDRESS>
 package main
 
 import (
+	"context"
+	"flag"
 	"fmt"
-	"math/rand"
+	"log"
+	"net"
+	"net/http"
+	"os"
+	"os/signal"
 	"time"
 )
 
@@ -23,41 +29,53 @@ go-telnet --timeout=10s host port go-telnet mysite.ru 8080 go-telnet --timeout=3
 При подключении к несуществующему сервер, программа должна завершаться через timeout.
 */
 
-func asChan(vs ...int) <-chan int {
-	c := make(chan int)
-
-	go func() {
-		for _, v := range vs {
-			c <- v
-			time.Sleep(time.Duration(rand.Intn(1000)) * time.Millisecond)
-		}
-
-		close(c)
-	}()
-	return c
-}
-
-func merge(a, b <-chan int) <-chan int {
-	c := make(chan int)
-	go func() {
-		for {
-			select {
-			case v := <-a:
-				c <- v
-			case v := <-b:
-				c <- v
-			}
-		}
-	}()
-	return c
-}
+var (
+	timeout time.Duration
+	address string = ":8080"
+)
 
 func main() {
+	initFlags()
+	mux := http.NewServeMux()
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, os.Interrupt)
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	start(ctx, mux, address)
+	go func(chan os.Signal) {
+		osCall := <-c
+		log.Printf("system call:%+v", osCall)
+		cancel()
+	}(c)
+}
 
-	a := asChan(1, 3, 5, 7)
-	b := asChan(2, 4, 6, 8)
-	c := merge(a, b)
-	for v := range c {
-		fmt.Println(v)
+func initFlags() {
+	flag.DurationVar(&timeout, "timeout", time.Second*5, "timeout for connecting to server")
+	flag.Parse()
+	if len(os.Args) >= 3 {
+		address = ":" + os.Args[3]
+	}
+}
+
+func start(ctx context.Context, mux *http.ServeMux, address string) {
+	listener, err := net.Listen("tcp", address)
+	if err != nil {
+		log.Fatal(err)
+	}
+	server := &http.Server{
+		Handler:      mux,
+		WriteTimeout: 5 * time.Second,
+		ReadTimeout:  5 * time.Second,
+	}
+	go control(ctx, server)
+	log.Fatal(server.Serve(listener))
+}
+
+func control(ctx context.Context, server *http.Server) {
+	select {
+	case <-ctx.Done():
+		log.Printf("server stopped\n")
+		server.Shutdown(ctx)
+	default:
+		fmt.Println("Hi")
 	}
 }

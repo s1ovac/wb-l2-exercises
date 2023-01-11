@@ -30,7 +30,7 @@ start := time.Now()
 	sig(1*time.Minute),
 )
 
-fmt.Printf(“fone after %v”, time.Since(start))
+fmt.Printf(“done after %v”, time.Since(start))
 */
 
 func main() {
