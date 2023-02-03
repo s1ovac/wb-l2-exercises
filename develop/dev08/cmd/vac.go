@@ -21,50 +21,46 @@ package main
 
 import (
 	"bufio"
+	"flag"
 	"fmt"
-	"log"
 	"os"
 	"os/exec"
 	"strings"
+)
 
-	color "github.com/TwiN/go-color"
+var (
+	prompt = flag.String("prompt", "$", "shell prompt")
 )
 
 func main() {
+	flag.Parse()
 	for {
-		path, err := os.Getwd()
+		fmt.Printf("%s ", *prompt)
+		reader := bufio.NewReader(os.Stdin)
+		input, _ := reader.ReadString('\n')
+		input = strings.TrimSpace(input)
+		args := strings.Split(input, " ")
+		if len(args) == 0 {
+			continue
+		}
+		if args[0] == "fork" {
+			cmd := exec.Command(os.Args[0], append(os.Args[1:], "forked")...)
+			cmd.Stdin = os.Stdin
+			cmd.Stdout = os.Stdout
+			cmd.Stderr = os.Stderr
+			err := cmd.Start()
+			if err != nil {
+				fmt.Println("Error:", err)
+			}
+			continue
+		}
+		cmd := exec.Command(args[0], args[1:]...)
+		cmd.Stdout = os.Stdout
+		cmd.Stderr = os.Stderr
+		err := cmd.Run()
 		if err != nil {
-			log.Fatal(err)
-		}
-		fmt.Printf("%v\r%s ", color.Green, path)
-		cmd, cmdArgs := readStringFromStd()
-		switch cmd {
-		case "cd":
-			c := exec.Command("cd", cmdArgs[0])
-			c.Run()
-		case "pwd":
-
-		case "echo":
-			fmt.Printf("%s\n%v%s\n", color.Green, strings.Join(cmdArgs, " "), path)
-		case "kill":
-
-		case "ps":
-
-		default:
-			fmt.Printf("%s: command not found: %v\n%s\n", cmd, color.Green, path)
+			fmt.Println("Error:", err)
 		}
 	}
 }
 
-func readStringFromStd() (string, []string) {
-	reader := bufio.NewReader(os.Stdin)
-	cmd, err := reader.ReadString('\n')
-	if err != nil {
-		log.Fatal(err)
-	}
-	cmd = strings.TrimSpace(cmd)
-	if arr := strings.Split(cmd, " "); len(arr) > 1 {
-		return arr[0], arr[1:]
-	}
-	return cmd, nil
-}
